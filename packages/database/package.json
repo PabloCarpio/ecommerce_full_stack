@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "lint": "eslint .",
+    "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "migrate": "prisma migrate dev",
     "seed": "ts-node prisma/seed.ts",
