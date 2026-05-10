@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,14 +11,15 @@ import { ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/api';
 
-export default function EditProductPage({ params }: { params: { id: string } }) {
+export default function EditProductPage() {
   const router = useRouter();
+  const params = useParams();
+  const id = params?.id as string;
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: '', slug: '', description: '', price: '', fileUrl: '', images: '' });
 
   useEffect(() => {
-    // In production, fetch product by ID from API
     setForm({ name: 'Next.js Masterclass', slug: 'nextjs-masterclass', description: 'Build production apps', price: '49.99', fileUrl: '', images: 'https://placehold.co/400x250' });
   }, []);
 
@@ -26,7 +27,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     e.preventDefault();
     setLoading(true);
     try {
-      await api.patch(`/products/${params.id}`, {
+      await api.patch(`/products/${id}`, {
         ...form,
         price: parseFloat(form.price),
         images: form.images ? form.images.split(',').map((u) => u.trim()) : [],
