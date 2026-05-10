@@ -41,13 +41,18 @@ COPY --from=build /app/apps/api/dist ./dist
 COPY --from=build /app/packages/database/dist ./packages/database/dist
 COPY --from=build /app/packages/types/dist ./packages/types/dist
 
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
+COPY --from=deps /app/packages/database/node_modules ./packages/database/node_modules
+COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules
+
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/database/package.json packages/database/
 COPY packages/types/package.json packages/types/
 COPY packages/config/package.json packages/config/
 COPY apps/api/package.json apps/api/
 
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --frozen-lockfile
 
 USER nestjs
 
