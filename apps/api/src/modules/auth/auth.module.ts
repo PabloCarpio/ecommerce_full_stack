@@ -6,11 +6,13 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { InMemoryTokenBlacklist } from '../../common/security/in-memory-token-blacklist.service';
 import { TOKEN_BLACKLIST } from '../../common/security/token-blacklist.interface';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({}),
+    MailModule,
   ],
   controllers: [AuthController],
   providers: [

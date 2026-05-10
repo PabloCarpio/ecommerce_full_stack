@@ -10,6 +10,7 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SearchModule } from './modules/search/search.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     ReviewsModule,
     SearchModule,
     AnalyticsModule,
+    MailModule,
   ],
   providers: [
     {

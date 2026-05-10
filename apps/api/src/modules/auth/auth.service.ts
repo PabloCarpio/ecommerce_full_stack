@@ -7,8 +7,12 @@ import { prisma } from '@ecommerce/database';
 import type { Role } from '@ecommerce/database';
 import { TOKEN_BLACKLIST } from '../../common/security/token-blacklist.interface';
 import type { ITokenBlacklist } from '../../common/security/token-blacklist.interface';
+import { MAIL_SERVICE } from '../mail/mail.token';
+import type { IMailService } from '../mail/mail.interface';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { TokenPairDto } from './dto/token-pair.dto';
 
 export interface TokenPayload {
@@ -30,6 +34,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
     @Inject(TOKEN_BLACKLIST) private readonly tokenBlacklist: ITokenBlacklist,
+    @Inject(MAIL_SERVICE) private readonly mailService: IMailService,
   ) {}
 
   async register(dto: RegisterDto): Promise<TokenPairDto> {
@@ -46,6 +51,8 @@ export class AuthService {
         role: 'BUYER' as Role,
       },
     });
+
+    this.mailService.sendWelcome(user.email, user.email.split('@')[0]).catch(() => {});
 
     return this.issueTokens(user.id, user.email, user.role);
   }
@@ -126,6 +133,47 @@ export class AuthService {
     }
 
     return { message: 'Logged out successfully' };
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto): Promise<{ message: string }> {
+    const user = await prisma.user.findUnique({ where: { email: dto.email } });
+    if (!user) {
+      return { message: 'If that email exists, a reset link has been sent' };
+    }
+
+    const resetToken = this.jwtService.sign(
+      { sub: user.id, email: user.email, purpose: 'reset-password' },
+      { secret: this.config.getOrThrow<string>('JWT_ACCESS_SECRET'), expiresIn: '1h' },
+    );
+
+    await this.mailService.sendPasswordReset(user.email, resetToken);
+
+    return { message: 'If that email exists, a reset link has been sent' };
+  }
+
+  async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
+    try {
+      const payload = this.jwtService.verifyAsync<{ sub: string; purpose: string }>(
+        dto.token,
+        { secret: this.config.getOrThrow<string>('JWT_ACCESS_SECRET') },
+      );
+
+      const { sub, purpose } = await payload;
+
+      if (purpose !== 'reset-password') {
+        throw new UnauthorizedException('Invalid reset token');
+      }
+
+      const passwordHash = await bcrypt.hash(dto.newPassword, this.SALT_ROUNDS);
+      await prisma.user.update({
+        where: { id: sub },
+        data: { passwordHash },
+      });
+
+      return { message: 'Password has been reset successfully' };
+    } catch {
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
   }
 
   private issueTokens(userId: string, email: string, role: Role): TokenPairDto {

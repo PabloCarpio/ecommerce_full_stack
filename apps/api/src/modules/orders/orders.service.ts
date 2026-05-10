@@ -1,5 +1,7 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Inject } from '@nestjs/common';
 import { prisma, Prisma, OrderStatus } from '@ecommerce/database';
+import { MAIL_SERVICE } from '../mail/mail.token';
+import type { IMailService } from '../mail/mail.interface';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderResponseDto } from './dto/order-response.dto';
 
@@ -38,6 +40,8 @@ function toOrderResponse(order: {
 
 @Injectable()
 export class OrdersService {
+  constructor(@Inject(MAIL_SERVICE) private readonly mailService: IMailService) {}
+
   async create(userId: string, _dto: CreateOrderDto): Promise<OrderResponseDto> {
     const cart = await prisma.cart.findUnique({
       where: { userId },
@@ -106,6 +110,11 @@ export class OrdersService {
 
     if (!fullOrder) {
       throw new NotFoundException('Order not found after creation');
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    if (user) {
+      this.mailService.sendOrderConfirmation(user.email, fullOrder.id, total).catch(() => {});
     }
 
     return toOrderResponse(fullOrder);
