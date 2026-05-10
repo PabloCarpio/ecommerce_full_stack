@@ -1,11 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { OrdersService } from './orders.service';
+import { MAIL_SERVICE } from '../mail/mail.token';
 
 jest.mock('@ecommerce/database', () => ({
   prisma: {
     cart: {
       findUnique: jest.fn(),
+      delete: jest.fn(),
     },
     order: {
       create: jest.fn(),
@@ -24,9 +26,12 @@ jest.mock('@ecommerce/database', () => ({
     cartItem: {
       deleteMany: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
     $transaction: jest.fn((cb) => cb(prisma)),
   },
-  Prisma: { Decimal: class Decimal { constructor(v: number) { return v as any; } } },
+  Prisma: { Decimal: class Decimal { constructor(v) { return v as any; } } },
   OrderStatus: { PENDING: 'PENDING', PAID: 'PAID' },
 }));
 
@@ -38,6 +43,7 @@ const mockPrisma = prisma as unknown as {
   orderItem: { createMany: jest.Mock };
   access: { createMany: jest.Mock };
   cartItem: { deleteMany: jest.Mock };
+  user: { findUnique: jest.Mock };
   $transaction: jest.Mock;
 };
 
@@ -46,7 +52,10 @@ describe('OrdersService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [OrdersService],
+      providers: [
+        OrdersService,
+        { provide: MAIL_SERVICE, useValue: { sendMail: jest.fn(), sendWelcome: jest.fn(), sendOrderConfirmation: jest.fn() } },
+      ],
     }).compile();
 
     service = module.get<OrdersService>(OrdersService);

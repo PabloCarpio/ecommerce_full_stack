@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { ProductsService } from './products.service';
+import { CACHE_SERVICE } from '../../common/cache/cache-token';
 
 jest.mock('@ecommerce/database', () => ({
   prisma: {
@@ -13,7 +14,7 @@ jest.mock('@ecommerce/database', () => ({
       delete: jest.fn(),
     },
   },
-  Prisma: { Decimal: class Decimal { constructor(v: number) { return v as any; } } },
+  Prisma: { Decimal: class Decimal { constructor(v) { return v as any; } } },
 }));
 
 import { prisma } from '@ecommerce/database';
@@ -36,6 +37,7 @@ describe('ProductsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProductsService,
+        { provide: CACHE_SERVICE, useValue: { get: jest.fn(), set: jest.fn(), del: jest.fn(), delByPattern: jest.fn() } },
         { provide: 'CACHE_MANAGER', useValue: { get: jest.fn(), set: jest.fn(), del: jest.fn(), store: { keys: jest.fn() } } },
       ],
     }).compile();

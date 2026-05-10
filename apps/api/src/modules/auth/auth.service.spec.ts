@@ -3,6 +3,8 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
+import { TOKEN_BLACKLIST } from '../../common/security/token-blacklist.interface';
+import { MAIL_SERVICE } from '../mail/mail.token';
 
 jest.mock('@ecommerce/database', () => ({
   prisma: {
@@ -42,6 +44,8 @@ describe('AuthService', () => {
         AuthService,
         { provide: JwtService, useValue: mockJwtService },
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: TOKEN_BLACKLIST, useValue: { add: jest.fn(), has: jest.fn() } },
+        { provide: MAIL_SERVICE, useValue: { sendMail: jest.fn(), sendWelcome: jest.fn().mockResolvedValue(undefined) } },
       ],
     }).compile();
 
