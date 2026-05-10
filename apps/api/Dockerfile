@@ -20,9 +20,11 @@ COPY --from=deps /app/packages/config ./packages/config
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/database packages/database
 COPY packages/types packages/types
+COPY packages/config packages/config
 COPY apps/api apps/api
 
-RUN pnpm --filter @ecommerce/types build \
+RUN pnpm --filter @ecommerce/config build \
+    && pnpm --filter @ecommerce/types build \
     && pnpm --filter @ecommerce/database exec prisma generate \
     && pnpm --filter @ecommerce/database build \
     && pnpm --filter @ecommerce/api build
