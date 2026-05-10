@@ -32,8 +32,6 @@ FROM node:22-alpine AS runner
 ENV NODE_ENV=production
 
 RUN addgroup -g 1001 -S nodejs && adduser -u 1001 -S nestjs -G nodejs
-RUN apk add --no-cache python3 make g++
-RUN corepack enable && corepack prepare pnpm@9 --activate
 
 WORKDIR /app
 
@@ -41,14 +39,7 @@ COPY --from=build /app/apps/api/dist ./dist
 COPY --from=build /app/packages/database/dist ./packages/database/dist
 COPY --from=build /app/packages/types/dist ./packages/types/dist
 
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY packages/database/package.json packages/database/
-COPY packages/types/package.json packages/types/
-COPY packages/config/package.json packages/config/
-COPY apps/api/package.json apps/api/
-
-RUN rm -rf node_modules apps/api/node_modules packages/*/node_modules 2>/dev/null || true
-RUN pnpm install
+COPY --from=deps /app/node_modules ./node_modules
 
 USER nestjs
 
