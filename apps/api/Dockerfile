@@ -37,15 +37,15 @@ RUN addgroup -g 1001 -S nodejs && adduser -u 1001 -S nestjs -G nodejs
 WORKDIR /app
 
 COPY --from=build /app/apps/api/dist ./dist
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/apps/api/node_modules ./apps/api/node_modules
-COPY --from=build /app/packages/database/node_modules ./packages/database/node_modules
 COPY --from=build /app/packages/database/dist ./packages/database/dist
-COPY --from=build /app/packages/database/package.json ./packages/database/package.json
 COPY --from=build /app/packages/types/dist ./packages/types/dist
-COPY --from=build /app/packages/types/node_modules ./packages/types/node_modules
-COPY --from=build /app/packages/types/package.json ./packages/types/package.json
-COPY --from=build /app/apps/api/package.json ./package.json
+COPY --from=build /app/packages/config/dist ./packages/config/dist
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
+COPY --from=deps /app/packages/database/node_modules ./packages/database/node_modules
+COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules
+COPY --from=deps /app/packages/config/node_modules ./packages/config/node_modules
 
 USER nestjs
 
