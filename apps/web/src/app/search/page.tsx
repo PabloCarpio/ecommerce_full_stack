@@ -6,12 +6,13 @@ export const metadata = {
   description: 'Search results for digital products.',
 };
 
-export default function SearchPage({ searchParams }: { searchParams: { q: string } }) {
+export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q: string }> }) {
+  const params = await searchParams;
   return (
     <div className="container py-8">
       <h1 className="text-3xl font-bold mb-2">Search Results</h1>
       <p className="text-muted-foreground mb-8">
-        Showing results for &quot;{searchParams.q}&quot;
+        Showing results for &quot;{params.q}&quot;
       </p>
       <Suspense fallback={<p>Loading...</p>}>
         <ProductGrid />

@@ -38,7 +38,6 @@ WORKDIR /app
 COPY --from=build /app/apps/api/dist ./dist
 COPY --from=build /app/packages/database/dist ./packages/database/dist
 COPY --from=build /app/packages/types/dist ./packages/types/dist
-COPY --from=build /app/packages/config/dist ./packages/config/dist
 
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/database/package.json packages/database/
