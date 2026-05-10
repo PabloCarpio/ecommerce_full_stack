@@ -14,17 +14,15 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy to Railway
+    name: Deploy to Render
     runs-on: ubuntu-latest
     environment:
       name: production
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Railway CLI
-        run: npm i -g @railway/cli
-
-      - name: Deploy
-        run: railway up --service ${{ secrets.RAILWAY_SERVICE_ID }} --environment production
+      - name: Deploy to Render
+        run: |
+          curl -sSf "$RENDER_DEPLOY_HOOK" || true
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}

@@ -11,9 +11,8 @@ Add these in **Settings → Secrets and variables → Actions**:
 | `VERCEL_TOKEN` | Vercel | https://vercel.com/account/tokens → Create Token (scope: Full Account) |
 | `VERCEL_ORG_ID` | Vercel | Run `npx vercel link` inside `apps/web`, then read from `.vercel/project.json` |
 | `VERCEL_PROJECT_ID` | Vercel | Same as above — found in `.vercel/project.json` after linking |
-| `RAILWAY_TOKEN` | Railway | https://railway.app/account/tokens → Create Token |
-| `RAILWAY_SERVICE_ID` | Railway | Run `railway status` after `railway init`, or find in Railway Dashboard → Service → Settings |
-| `NEXT_PUBLIC_API_URL` | Deployment | Your Railway API URL, e.g. `https://ecommerce-api-production.up.railway.app` |
+| `RENDER_DEPLOY_HOOK` | Render | Render Dashboard → your service → Settings → Deploy Hook → Create one |
+| `NEXT_PUBLIC_API_URL` | Deployment | Your Render API URL, e.g. `https://ecommerce-api.onrender.com` |
 
 ---
 
@@ -23,14 +22,14 @@ Set in **Vercel Dashboard → Project → Settings → Environment Variables** (
 
 | Variable | Value |
 |----------|-------|
-| `NEXT_PUBLIC_API_URL` | `https://<your-railway-app>.up.railway.app` |
-| `NEXT_PUBLIC_APP_URL` | `https://<your-vercel-app>.vercel.app` |
+| `NEXT_PUBLIC_API_URL` | `https://ecommerce-api.onrender.com` (your Render URL) |
+| `NEXT_PUBLIC_APP_URL` | `https://<your-app>.vercel.app` |
 
 ---
 
-## Railway Environment Variables
+## Render Environment Variables
 
-Set in **Railway Dashboard → Project → Variables**:
+Set in **Render Dashboard → your service → Environment**:
 
 | Variable | Value | Notes |
 |----------|-------|-------|
@@ -40,7 +39,7 @@ Set in **Railway Dashboard → Project → Variables**:
 | `JWT_REFRESH_SECRET` | Generate with `openssl rand -base64 64` | Different from access secret |
 | `JWT_ACCESS_EXPIRES_IN` | `15m` | |
 | `JWT_REFRESH_EXPIRES_IN` | `7d` | |
-| `FRONTEND_URL` | `https://<your-vercel-app>.vercel.app` | CORS origin |
+| `FRONTEND_URL` | `https://<your-app>.vercel.app` | CORS origin |
 | `PORT` | `4000` | NestJS port |
 | `NODE_ENV` | `production` | |
 | `UPSTASH_REDIS_REST_URL` | `https://<endpoint>.upstash.io` | Create at https://upstash.com |
@@ -65,23 +64,27 @@ cd apps/web
 npx vercel link              # Creates .vercel/project.json with ORG_ID + PROJECT_ID
 npx vercel env pull .env.local   # Pull existing Vercel env vars locally (optional)
 
-# 3. Railway (run from project root)
-npm i -g @railway/cli
-railway login                 # Opens browser
-railway init                  # Links repo to Railway service
-railway up                    # First deploy (or let CI handle it)
-railway variables set DATABASE_URL="postgresql://..."   # Set each variable
-railway variables set JWT_ACCESS_SECRET="..."
-# ... repeat for all Railway vars above
+# 3. Render (via Dashboard)
+# Go to https://dashboard.render.com → New → Web Service
+# Connect your GitHub repo
+# Set:
+#   Runtime: Docker
+#   Dockerfile Path: ./apps/api/Dockerfile
+#   Docker Context: . (root of monorepo)
+# Add all environment variables from the table above
 
-# 4. Upstash (create free Redis)
-# Go to https://upstash.com → Create Database → Copy REST URL + Token to Railway vars
+# 4. After creating the Render service, get the Deploy Hook URL:
+# Render Dashboard → your service → Settings → Deploy Hook → Create
+# Add that URL as RENDER_DEPLOY_HOOK in GitHub Secrets
 
-# 5. Cloudinary (create free account)
-# Go to https://cloudinary.com → Dashboard → Copy Cloud Name, API Key, API Secret to Railway vars
+# 5. Upstash (create free Redis)
+# Go to https://upstash.com → Create Database → Copy REST URL + Token to Render vars
 
-# 6. Resend (create free account)
-# Go to https://resend.com → Create API Key → Copy to Railway vars
+# 6. Cloudinary (create free account)
+# Go to https://cloudinary.com → Dashboard → Copy Cloud Name, API Key, API Secret to Render vars
+
+# 7. Resend (create free account)
+# Go to https://resend.com → Create API Key → Copy to Render vars
 ```
 
 ---
@@ -108,7 +111,7 @@ For the CI/CD pipeline, `db-migrate.yml` runs `prisma migrate deploy` automatica
 | Service | Free Tier | Potential Limit |
 |---------|-----------|-----------------|
 | Supabase | 500 MB DB, 2 projects | Storage & row limits |
-| Railway | 500 hrs/mo, 512 MB RAM | Cold starts after inactivity |
+| Render | 750 hrs/mo, 512 MB RAM | Cold starts after 15min inactivity |
 | Vercel | 100 GB bandwidth, unlimited deploys | Serverless function timeout 10s |
 | Upstash | 10k commands/day, 256 MB | Rate-limited if exceeded |
 | Cloudinary | 25 GB storage, 25k transforms/mo | Bandwidth limits |

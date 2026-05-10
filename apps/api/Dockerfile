@@ -1,5 +1,5 @@
 FROM node:22-alpine AS base
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@9 --activate
 WORKDIR /app
 
 FROM base AS deps
@@ -15,7 +15,11 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=deps /app/packages/database/node_modules ./packages/database/node_modules
 COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules
-COPY . .
+COPY --from=deps /app/packages/config ./packages/config
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY packages/database packages/database
+COPY packages/types packages/types
+COPY apps/api apps/api
 
 RUN pnpm --filter @ecommerce/types build \
     && pnpm --filter @ecommerce/database exec prisma generate \
@@ -36,6 +40,7 @@ COPY --from=build /app/packages/database/node_modules ./packages/database/node_m
 COPY --from=build /app/packages/database/dist ./packages/database/dist
 COPY --from=build /app/packages/database/package.json ./packages/database/package.json
 COPY --from=build /app/packages/types/dist ./packages/types/dist
+COPY --from=build /app/packages/types/node_modules ./packages/types/node_modules
 COPY --from=build /app/packages/types/package.json ./packages/types/package.json
 COPY --from=build /app/apps/api/package.json ./package.json
 
@@ -43,7 +48,7 @@ USER nestjs
 
 EXPOSE 4000
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:4000/api/docs || exit 1
 
 CMD ["node", "dist/main.js"]
