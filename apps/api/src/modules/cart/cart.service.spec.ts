@@ -20,7 +20,7 @@ jest.mock('@ecommerce/database', () => ({
       findUnique: jest.fn(),
     },
   },
-  Prisma: { Decimal: class Decimal { constructor(v: number) { return v as any; } } },
+  Prisma: { Decimal: class Decimal { constructor(v: any) { return v as any; } } },
 }));
 
 import { prisma } from '@ecommerce/database';

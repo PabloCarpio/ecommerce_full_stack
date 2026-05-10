@@ -14,7 +14,7 @@ jest.mock('@ecommerce/database', () => ({
       delete: jest.fn(),
     },
   },
-  Prisma: { Decimal: class Decimal { constructor(v) { return v as any; } } },
+  Prisma: { Decimal: class Decimal { constructor(v: any) { return v as any; } } },
 }));
 
 import { prisma } from '@ecommerce/database';

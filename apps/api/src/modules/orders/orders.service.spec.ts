@@ -31,7 +31,7 @@ jest.mock('@ecommerce/database', () => ({
     },
     $transaction: jest.fn((cb) => cb(prisma)),
   },
-  Prisma: { Decimal: class Decimal { constructor(v) { return v as any; } } },
+  Prisma: { Decimal: class Decimal { constructor(v: any) { return v as any; } } },
   OrderStatus: { PENDING: 'PENDING', PAID: 'PAID' },
 }));
 
