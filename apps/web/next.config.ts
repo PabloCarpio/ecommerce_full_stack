@@ -5,10 +5,6 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 });
 
 const nextConfig: NextConfig = {
-  experimental: {
-    ppr: 'incremental',
-  },
-
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'placehold.co' },

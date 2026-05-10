@@ -23,8 +23,7 @@ COPY packages/types packages/types
 COPY packages/config packages/config
 COPY apps/api apps/api
 
-RUN pnpm --filter @ecommerce/config build \
-    && pnpm --filter @ecommerce/types build \
+RUN pnpm --filter @ecommerce/types build \
     && pnpm --filter @ecommerce/database exec prisma generate \
     && pnpm --filter @ecommerce/database build \
     && pnpm --filter @ecommerce/api build
@@ -39,7 +38,6 @@ WORKDIR /app
 COPY --from=build /app/apps/api/dist ./dist
 COPY --from=build /app/packages/database/dist ./packages/database/dist
 COPY --from=build /app/packages/types/dist ./packages/types/dist
-COPY --from=build /app/packages/config/dist ./packages/config/dist
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
