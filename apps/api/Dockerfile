@@ -30,7 +30,7 @@ RUN pnpm --filter @ecommerce/types build \
 FROM node:22-alpine AS runner
 ENV NODE_ENV=production
 
-RUN addgroup -S nodejs 1001 && adduser -S nestjs 1001
+RUN addgroup -g 1001 -S nodejs && adduser -u 1001 -S nestjs -G nodejs
 
 WORKDIR /app
 
