@@ -45,6 +45,10 @@ COPY apps/api/package.json apps/api/
 # Install production deps — pnpm sets up proper node_modules with symlinks
 RUN pnpm install --prod --frozen-lockfile
 
+# Copy Prisma schema and generate client for the fresh node_modules
+COPY packages/database/prisma ./packages/database/prisma
+RUN pnpm --filter @ecommerce/database exec prisma generate
+
 # Copy built artifacts
 COPY --from=build /app/packages/database/dist ./packages/database/dist
 COPY --from=build /app/packages/types/dist ./packages/types/dist

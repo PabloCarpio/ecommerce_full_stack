@@ -228,13 +228,13 @@ importers:
       '@prisma/client':
         specifier: ^5.15.0
         version: 5.22.0(prisma@5.22.0)
+      prisma:
+        specifier: ^5.15.0
+        version: 5.22.0
     devDependencies:
       '@ecommerce/config':
         specifier: workspace:*
         version: link:../config
-      prisma:
-        specifier: ^5.15.0
-        version: 5.22.0
       ts-node:
         specifier: ^10.9.0
         version: 10.9.2(@types/node@22.19.18)(typescript@5.9.3)

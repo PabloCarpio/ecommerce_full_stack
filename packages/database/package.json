@@ -19,17 +19,17 @@
     "seed": "ts-node prisma/seed.ts",
     "studio": "prisma studio"
   },
+  "dependencies": {
+    "@ecommerce/types": "workspace:*",
+    "@prisma/client": "^5.15.0",
+    "prisma": "^5.15.0"
+  },
   "devDependencies": {
     "@ecommerce/config": "workspace:*",
-    "prisma": "^5.15.0",
     "ts-node": "^10.9.0",
     "typescript": "^5.5.0"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
-  },
-  "dependencies": {
-    "@ecommerce/types": "workspace:*",
-    "@prisma/client": "^5.15.0"
   }
 }
