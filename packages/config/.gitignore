@@ -1,0 +1,13 @@
+.husky/
+_
+.env
+.env.local
+.env.*.local
+node_modules/
+dist/
+.next/
+out/
+.turbo/
+coverage/
+.DS_Store
+*.log
