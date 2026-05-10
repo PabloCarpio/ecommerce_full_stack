@@ -31,15 +31,24 @@ RUN pnpm --filter @ecommerce/types build \
 FROM node:22-alpine AS runner
 ENV NODE_ENV=production
 
+RUN corepack enable && corepack prepare pnpm@9 --activate
 RUN addgroup -g 1001 -S nodejs && adduser -u 1001 -S nestjs -G nodejs
 
 WORKDIR /app
 
-COPY --from=build /app/apps/api/dist ./dist
+# Only copy files needed for pnpm install --prod
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY packages/database/package.json packages/database/
+COPY packages/types/package.json packages/types/
+COPY apps/api/package.json apps/api/
+
+# Install production deps — pnpm sets up proper node_modules with symlinks
+RUN pnpm install --prod --frozen-lockfile
+
+# Copy built artifacts
 COPY --from=build /app/packages/database/dist ./packages/database/dist
 COPY --from=build /app/packages/types/dist ./packages/types/dist
-
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=build /app/apps/api/dist ./apps/api/dist
 
 USER nestjs
 
@@ -48,4 +57,4 @@ EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:4000/api/docs || exit 1
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "apps/api/dist/main.js"]
