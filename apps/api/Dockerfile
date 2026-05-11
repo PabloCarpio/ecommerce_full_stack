@@ -31,6 +31,7 @@ RUN pnpm --filter @ecommerce/types build \
 FROM node:22-alpine AS runner
 ENV NODE_ENV=production
 
+RUN apk add --no-cache openssl
 RUN corepack enable && corepack prepare pnpm@9 --activate
 RUN addgroup -g 1001 -S nodejs && adduser -u 1001 -S nestjs -G nodejs
 
