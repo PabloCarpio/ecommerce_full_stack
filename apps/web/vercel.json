@@ -1,8 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd ../.. && pnpm --filter @ecommerce/database exec prisma generate && pnpm --filter @ecommerce/database build && pnpm --filter @ecommerce/types build && pnpm --filter @ecommerce/web build",
   "outputDirectory": ".next",
-  "framework": "nextjs",
-  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- apps/web/ packages/ pnpm-lock.yaml"
+  "framework": "nextjs"
 }
