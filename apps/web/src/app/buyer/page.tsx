@@ -13,7 +13,12 @@ interface Order {
   status: string;
   total: number;
   createdAt: string;
-  items: Array<{ product: { name: string; slug: string } }>;
+  items: Array<{
+    id: string;
+    quantity: number;
+    unitPrice: number;
+    product: { id: string; name: string; slug: string; image: string };
+  }>;
 }
 
 export default function BuyerDashboard() {

@@ -1,23 +1,29 @@
 'use client';
 
 import { useCartStore } from '@/stores/cart-store';
+import { useCartTotal } from '@/stores/cart-store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Trash2, Plus, Minus } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export function CartContent() {
-  const { items, removeItem, updateQuantity, total } = useCartStore();
+  const router = useRouter();
+  const items = useCartStore((s) => s.items);
+  const removeItem = useCartStore((s) => s.removeItem);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const total = useCartTotal();
 
   if (items.length === 0) {
     return (
       <div className="container py-16 text-center">
         <h1 className="text-3xl font-bold mb-4">Your Cart is Empty</h1>
         <p className="text-muted-foreground mb-8">Browse our products and add items to your cart.</p>
-        <Link href="/products">
-          <Button>Browse Products</Button>
-        </Link>
+        <Button asChild>
+          <Link href="/products">Browse Products</Link>
+        </Button>
       </div>
     );
   }
@@ -40,7 +46,7 @@ export function CartContent() {
                   <p className="text-lg font-bold mt-1">${item.price.toFixed(2)}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon" onClick={() => updateQuantity(item.productId, item.quantity - 1)}>
+                  <Button variant="outline" size="icon" disabled={item.quantity <= 1} onClick={() => updateQuantity(item.productId, item.quantity - 1)}>
                     <Minus className="h-3 w-3" />
                   </Button>
                   <span className="w-8 text-center">{item.quantity}</span>
@@ -69,7 +75,9 @@ export function CartContent() {
                   <span>${total.toFixed(2)}</span>
                 </div>
               </div>
-              <Button className="w-full" size="lg">Checkout</Button>
+              <Button className="w-full" size="lg" onClick={() => router.push('/checkout')}>
+                Checkout
+              </Button>
             </CardContent>
           </Card>
         </div>

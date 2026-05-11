@@ -1,21 +1,23 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth-store';
+import { useHydrated } from '@/hooks/use-hydrated';
 import { Sidebar } from '@/components/seller/sidebar';
 
 export default function SellerLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
+  const hydrated = useHydrated();
   const router = useRouter();
 
   useEffect(() => {
-    if (!user || user.role !== 'SELLER') {
+    if (hydrated && (!user || user.role !== 'SELLER')) {
       router.push('/auth/login');
     }
-  }, [user, router]);
+  }, [user, hydrated, router]);
 
-  if (!user || user.role !== 'SELLER') {
+  if (!hydrated || !user || user.role !== 'SELLER') {
     return <div className="container py-16 text-center">Redirecting...</div>;
   }
 

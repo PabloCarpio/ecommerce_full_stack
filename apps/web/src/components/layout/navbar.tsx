@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ShoppingCart, Moon, Sun, Search, Menu, X, User } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
@@ -9,12 +9,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/stores/auth-store';
 import { useCartStore } from '@/stores/cart-store';
+import { useHydrated } from '@/hooks/use-hydrated';
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const { user, logout } = useAuthStore();
-  const { items } = useCartStore();
+  const hydrated = useHydrated();
+  const user = useAuthStore((s) => s.user);
+  const items = useCartStore((s) => s.items);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -26,7 +29,7 @@ export function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`;
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
@@ -65,16 +68,16 @@ export function Navbar() {
         </form>
 
         <div className="flex items-center gap-2 ml-auto md:ml-0">
-          <Link href="/cart">
-            <Button variant="ghost" size="icon" className="relative">
+          <Button asChild variant="ghost" size="icon" className="relative">
+            <Link href="/cart">
               <ShoppingCart className="h-5 w-5" />
-              {items.length > 0 && (
+              {hydrated && items.length > 0 && (
                 <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
                   {items.length}
                 </span>
               )}
-            </Button>
-          </Link>
+            </Link>
+          </Button>
 
           <Button
             variant="ghost"
@@ -85,17 +88,17 @@ export function Navbar() {
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           </Button>
 
-          {user ? (
-            <Link href={`/${user.role.toLowerCase()}`}>
-              <Button variant="ghost" size="icon">
+          {hydrated && user ? (
+            <Button asChild variant="ghost" size="icon">
+              <Link href={`/${user.role.toLowerCase()}`}>
                 <User className="h-5 w-5" />
-              </Button>
-            </Link>
-          ) : (
-            <Link href="/auth/login">
-              <Button variant="ghost" size="sm">Sign In</Button>
-            </Link>
-          )}
+              </Link>
+            </Button>
+          ) : hydrated ? (
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/auth/login">Sign In</Link>
+            </Button>
+          ) : null}
 
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -114,7 +117,7 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
-            {!user && (
+            {hydrated && !user && (
               <Link href="/auth/login" className="text-sm font-medium py-2 text-primary" onClick={() => setMobileOpen(false)}>
                 Sign In
               </Link>

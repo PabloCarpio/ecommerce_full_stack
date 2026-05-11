@@ -3,19 +3,21 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth-store';
+import { useHydrated } from '@/hooks/use-hydrated';
 import { Sidebar } from '@/components/admin/sidebar';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
+  const hydrated = useHydrated();
   const router = useRouter();
 
   useEffect(() => {
-    if (!user || user.role !== 'ADMIN') {
+    if (hydrated && (!user || user.role !== 'ADMIN')) {
       router.push('/auth/login');
     }
-  }, [user, router]);
+  }, [user, hydrated, router]);
 
-  if (!user || user.role !== 'ADMIN') {
+  if (!hydrated || !user || user.role !== 'ADMIN') {
     return <div className="container py-16 text-center">Redirecting...</div>;
   }
 

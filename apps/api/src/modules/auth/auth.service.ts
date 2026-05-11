@@ -37,27 +37,32 @@ export class AuthService {
     @Inject(MAIL_SERVICE) private readonly mailService: IMailService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<TokenPairDto> {
+  async register(dto: RegisterDto): Promise<TokenPairDto & { user: { id: string; email: string; role: string } }> {
     const existing = await prisma.user.findUnique({ where: { email: dto.email } });
     if (existing) {
       throw new ConflictException('Email already in use');
     }
 
     const passwordHash = await bcrypt.hash(dto.password, this.SALT_ROUNDS);
+    const role: Role = dto.role ?? 'BUYER';
     const user = await prisma.user.create({
       data: {
         email: dto.email,
         passwordHash,
-        role: 'BUYER' as Role,
+        role,
+        ...(role === 'SELLER' && dto.storeName
+          ? { store: { create: { name: dto.storeName } } }
+          : {}),
       },
     });
 
     this.mailService.sendWelcome(user.email, user.email.split('@')[0]).catch(() => {});
 
-    return this.issueTokens(user.id, user.email, user.role);
+    const tokens = this.issueTokens(user.id, user.email, user.role);
+    return { ...tokens, user: { id: user.id, email: user.email, role: user.role } };
   }
 
-  async login(dto: LoginDto): Promise<TokenPairDto> {
+  async login(dto: LoginDto): Promise<TokenPairDto & { user: { id: string; email: string; role: string } }> {
     const user = await prisma.user.findUnique({ where: { email: dto.email } });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -68,7 +73,8 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return this.issueTokens(user.id, user.email, user.role);
+    const tokens = this.issueTokens(user.id, user.email, user.role);
+    return { ...tokens, user: { id: user.id, email: user.email, role: user.role } };
   }
 
   async refresh(refreshToken: string): Promise<TokenPairDto> {
@@ -174,6 +180,14 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException('Invalid or expired reset token');
     }
+  }
+
+  async getProfile(userId: string): Promise<{ id: string; email: string; role: string }> {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return { id: user.id, email: user.email, role: user.role };
   }
 
   private issueTokens(userId: string, email: string, role: Role): TokenPairDto {

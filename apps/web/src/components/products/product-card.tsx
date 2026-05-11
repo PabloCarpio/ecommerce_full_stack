@@ -33,9 +33,9 @@ export function ProductCard({ id, slug, name, description, price, image, sellerN
         <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{description}</p>
         <div className="flex items-center justify-between mt-4">
           <span className="text-xl font-bold">${price.toFixed(2)}</span>
-          <Link href={`/products/${slug}`}>
-            <Button size="sm">View Details</Button>
-          </Link>
+          <Button asChild size="sm">
+            <Link href={`/products/${slug}`}>View Details</Link>
+          </Button>
         </div>
         <p className="text-xs text-muted-foreground mt-2">by {sellerName}</p>
       </CardContent>

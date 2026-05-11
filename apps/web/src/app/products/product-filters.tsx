@@ -1,35 +1,88 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { api } from '@/lib/api';
 
-const categories = [
-  'Development', 'Design', 'Business', 'Marketing',
-  'Photography', 'Music', 'Health & Fitness', 'Lifestyle',
-];
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 export function ProductFilters() {
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') ?? '');
+  const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') ?? '');
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('categoryId') ?? '');
+
+  useEffect(() => {
+    api.get<Category[]>('/categories')
+      .then(setCategories)
+      .catch(() => setCategories([]));
+  }, []);
+
+  const applyFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (selectedCategory) {
+      params.set('categoryId', selectedCategory);
+    } else {
+      params.delete('categoryId');
+    }
+    if (minPrice) {
+      params.set('minPrice', minPrice);
+    } else {
+      params.delete('minPrice');
+    }
+    if (maxPrice) {
+      params.set('maxPrice', maxPrice);
+    } else {
+      params.delete('maxPrice');
+    }
+    router.push(`/products?${params.toString()}`);
+  };
+
+  const clearFilters = () => {
+    setMinPrice('');
+    setMaxPrice('');
+    setSelectedCategory('');
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('categoryId');
+    params.delete('minPrice');
+    params.delete('maxPrice');
+    router.push(`/products?${params.toString()}`);
+  };
 
   return (
     <div className="space-y-6">
       <div>
         <h3 className="font-semibold mb-3">Categories</h3>
         <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <input
+              type="radio"
+              name="category"
+              checked={selectedCategory === ''}
+              onChange={() => setSelectedCategory('')}
+              className="accent-primary"
+            />
+            All
+          </label>
           {categories.map((cat) => (
-            <label key={cat} className="flex items-center gap-2 text-sm cursor-pointer">
+            <label key={cat.id} className="flex items-center gap-2 text-sm cursor-pointer">
               <input
                 type="radio"
                 name="category"
-                checked={selectedCategory === cat}
-                onChange={() => setSelectedCategory(cat)}
+                checked={selectedCategory === cat.id}
+                onChange={() => setSelectedCategory(cat.id)}
                 className="accent-primary"
               />
-              {cat}
+              {cat.name}
             </label>
           ))}
         </div>
@@ -38,12 +91,15 @@ export function ProductFilters() {
       <div>
         <h3 className="font-semibold mb-3">Price Range</h3>
         <div className="flex gap-2">
-          <Input placeholder="Min" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} type="number" />
-          <Input placeholder="Max" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} type="number" />
+          <Input placeholder="Min" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} type="number" min="0" />
+          <Input placeholder="Max" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} type="number" min="0" />
         </div>
       </div>
 
-      <Button className="w-full">Apply Filters</Button>
+      <div className="space-y-2">
+        <Button className="w-full" onClick={applyFilters}>Apply Filters</Button>
+        <Button variant="outline" className="w-full" onClick={clearFilters}>Clear Filters</Button>
+      </div>
     </div>
   );
 }

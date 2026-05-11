@@ -14,7 +14,7 @@ import { api } from '@/lib/api';
 export default function RegisterSellerPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { setTokens } = useAuthStore();
+  const setAuth = useAuthStore((s) => s.setAuth);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [storeName, setStoreName] = useState('');
@@ -24,8 +24,13 @@ export default function RegisterSellerPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const data = await api.post<{ accessToken: string; refreshToken: string }>('/auth/register', { email, password });
-      setTokens(data.accessToken, data.refreshToken);
+      const data = await api.post<{ accessToken: string; refreshToken: string; user: { id: string; email: string; role: string } }>('/auth/register', {
+        email,
+        password,
+        role: 'SELLER',
+        storeName: storeName || undefined,
+      });
+      setAuth(data.accessToken, data.refreshToken, data.user);
       toast({ title: 'Seller account created!', description: 'Start adding products to your store.' });
       router.push('/seller');
     } catch {

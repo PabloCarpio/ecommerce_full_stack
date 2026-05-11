@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ArrowRight, BookOpen, Code, Palette, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/products/product-card';
-import { api } from '@/lib/api';
+import { serverFetch } from '@/lib/api';
 
 const features = [
   { icon: BookOpen, title: 'Premium Courses', desc: 'Expert-led video courses and tutorials' },
@@ -23,8 +23,8 @@ export default async function HomePage() {
   }> = [];
 
   try {
-    const data = await api.get<{
-      items: Array<{
+    const data = await serverFetch<{
+      items?: Array<{
         id: string;
         slug: string;
         name: string;
@@ -34,7 +34,7 @@ export default async function HomePage() {
         seller?: { id: string; name: string };
       }>;
     }>('/products?limit=8&sortOrder=desc');
-    featuredProducts = data.items;
+    featuredProducts = data?.items ?? [];
   } catch {
     featuredProducts = Array.from({ length: 8 }).map((_, i) => ({
       id: `prod-${i}`,
@@ -60,14 +60,14 @@ export default async function HomePage() {
             Learn at your pace, build at your speed.
           </p>
           <div className="flex gap-4">
-            <Link href="/products">
-              <Button size="lg">
+            <Button asChild size="lg">
+              <Link href="/products">
                 Browse Products <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/auth/register/seller">
-              <Button variant="outline" size="lg">Start Selling</Button>
-            </Link>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/auth/register/seller">Start Selling</Link>
+            </Button>
           </div>
         </div>
       </section>
@@ -116,9 +116,9 @@ export default async function HomePage() {
           <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
             Join thousands of creators monetizing their expertise. Set up your store in minutes.
           </p>
-          <Link href="/auth/register/seller">
-            <Button size="lg">Create Your Store</Button>
-          </Link>
+          <Button asChild size="lg">
+            <Link href="/auth/register/seller">Create Your Store</Link>
+          </Button>
         </div>
       </section>
     </div>

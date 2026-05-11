@@ -14,7 +14,7 @@ import { api } from '@/lib/api';
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { setTokens } = useAuthStore();
+  const setAuth = useAuthStore((s) => s.setAuth);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,10 +23,11 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const data = await api.post<{ accessToken: string; refreshToken: string }>('/auth/login', { email, password });
-      setTokens(data.accessToken, data.refreshToken);
+      const data = await api.post<{ accessToken: string; refreshToken: string; user: { id: string; email: string; role: string } }>('/auth/login', { email, password });
+      setAuth(data.accessToken, data.refreshToken, data.user);
+      const role = data.user.role.toLowerCase();
       toast({ title: 'Welcome back!', description: 'You have been logged in successfully.' });
-      router.push('/');
+      router.push(role === 'admin' ? '/admin' : role === 'seller' ? '/seller' : '/');
     } catch {
       toast({ title: 'Login failed', description: 'Invalid credentials. Please try again.', variant: 'destructive' });
     } finally {

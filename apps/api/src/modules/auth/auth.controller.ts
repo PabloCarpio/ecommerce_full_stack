@@ -1,8 +1,9 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Req, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -11,6 +12,10 @@ import { LogoutDto } from './dto/logout.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { TokenPairDto } from './dto/token-pair.dto';
+
+interface AuthResponse extends TokenPairDto {
+  user: { id: string; email: string; role: string };
+}
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -22,7 +27,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Register a new user' })
   @ApiResponse({ status: 201, description: 'User registered successfully', type: TokenPairDto })
   @ApiResponse({ status: 409, description: 'Email already in use' })
-  async register(@Body() dto: RegisterDto): Promise<TokenPairDto> {
+  async register(@Body() dto: RegisterDto): Promise<AuthResponse> {
     return this.authService.register(dto);
   }
 
@@ -32,7 +37,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Authenticate and receive tokens' })
   @ApiResponse({ status: 200, description: 'Login successful', type: TokenPairDto })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(@Body() dto: LoginDto): Promise<TokenPairDto> {
+  async login(@Body() dto: LoginDto): Promise<AuthResponse> {
     return this.authService.login(dto);
   }
 
@@ -60,6 +65,15 @@ export class AuthController {
     const authHeader = req.headers['authorization'] as string | undefined;
     const accessToken = authHeader?.replace('Bearer ', '');
     return this.authService.logout(accessToken, dto.refreshToken);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({ status: 200, description: 'Current user profile' })
+  async getProfile(@CurrentUser() user: { userId: string }) {
+    return this.authService.getProfile(user.userId);
   }
 
   @Post('forgot-password')
