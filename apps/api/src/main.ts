@@ -27,7 +27,7 @@ async function bootstrap(): Promise<void> {
           imgSrc: ["'self'", 'data:', 'https:'],
           connectSrc: isDev
             ? ["'self'", 'http://localhost:3000', 'http://localhost:4000']
-            : ["'self'", 'https://web-batq9xkpr-pablocarpios-projects.vercel.app', 'https://e-commerce-qttzou2ac-pablocarpios-projects.vercel.app'],
+            : ["'self'", 'https://*.vercel.app'],
           frameSrc: ["'none'"],
           objectSrc: ["'none'"],
           baseUri: ["'self'"],
@@ -51,7 +51,7 @@ async function bootstrap(): Promise<void> {
   app.enableCors({
     origin: isDev 
       ? process.env['FRONTEND_URL'] || 'http://localhost:3000'
-      : ['https://web-batq9xkpr-pablocarpios-projects.vercel.app', 'https://e-commerce-qttzou2ac-pablocarpios-projects.vercel.app'],
+      : true, // Allow all origins in production
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

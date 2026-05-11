@@ -6,5 +6,16 @@
   "framework": "nextjs",
   "env": {
     "NEXT_PUBLIC_API_URL": "https://ecommerce-full-stack-1-zwlg.onrender.com"
-  }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ]
 }
