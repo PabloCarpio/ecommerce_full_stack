@@ -61,9 +61,7 @@ jobs:
         id: deploy
         working-directory: apps/web
         run: |
-          rm -rf node_modules
-          rm -rf ../../node_modules
-          DEPLOY_URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          DEPLOY_URL=$(vercel deploy --prebuilt --prod --archive=tgz --token=${{ secrets.VERCEL_TOKEN }})
           echo "url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
 
       - name: Print deployment URL
