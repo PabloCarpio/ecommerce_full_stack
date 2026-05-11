@@ -3,5 +3,8 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install --legacy-peer-deps",
   "outputDirectory": ".next",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://ecommerce-full-stack-1-zwlg.onrender.com"
+  }
 }
