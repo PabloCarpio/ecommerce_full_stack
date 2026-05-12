@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ShoppingCart, Moon, Sun, Search, Menu, X, User } from 'lucide-react';
+import { ShoppingCart, Moon, Sun, Search, Menu, X, User, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,12 @@ import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/stores/auth-store';
 import { useCartStore } from '@/stores/cart-store';
 import { useHydrated } from '@/hooks/use-hydrated';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -89,11 +95,23 @@ export function Navbar() {
           </Button>
 
           {hydrated && user ? (
-            <Button asChild variant="ghost" size="icon">
-              <Link href={`/${user.role.toLowerCase()}`}>
-                <User className="h-5 w-5" />
-              </Link>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <User className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => router.push(`/${user.role.toLowerCase()}`)}>
+                  <User className="mr-2 h-4 w-4" />
+                  Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => useAuthStore.getState().logout()}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : hydrated ? (
             <Button asChild variant="ghost" size="sm">
               <Link href="/auth/login">Sign In</Link>
@@ -121,6 +139,17 @@ export function Navbar() {
               <Link href="/auth/login" className="text-sm font-medium py-2 text-primary" onClick={() => setMobileOpen(false)}>
                 Sign In
               </Link>
+            )}
+            {hydrated && user && (
+              <button
+                className="text-sm font-medium py-2 text-destructive w-full text-left"
+                onClick={() => {
+                  useAuthStore.getState().logout();
+                  setMobileOpen(false);
+                }}
+              >
+                Sign Out
+              </button>
             )}
           </nav>
         </div>
