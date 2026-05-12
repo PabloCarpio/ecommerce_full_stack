@@ -14,6 +14,10 @@ const isDev = process.env['NODE_ENV'] !== 'production';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
+  const devOrigins = (process.env['FRONTEND_URL'] || 'http://localhost:3000')
+    .split(',')
+    .map((s) => s.trim());
+
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -26,8 +30,8 @@ async function bootstrap(): Promise<void> {
           fontSrc: ["'self'", 'https://fonts.gstatic.com'],
           imgSrc: ["'self'", 'data:', 'https:'],
           connectSrc: isDev
-            ? ["'self'", 'http://localhost:3000', 'http://localhost:4000']
-            : ["'self'", 'https://*.vercel.app'],
+            ? ["'self'", ...devOrigins, 'http://localhost:4000']
+            : ["'self'", 'https://*.vercel.app', 'https://*.onrender.com'],
           frameSrc: ["'none'"],
           objectSrc: ["'none'"],
           baseUri: ["'self'"],
@@ -50,8 +54,8 @@ async function bootstrap(): Promise<void> {
   app.use(compression());
   app.enableCors({
     origin: isDev 
-      ? process.env['FRONTEND_URL'] || 'http://localhost:3000'
-      : true, // Allow all origins in production
+      ? devOrigins
+      : true,
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
